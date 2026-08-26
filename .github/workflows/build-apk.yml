@@ -1,17 +1,17 @@
 name: Build APK
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Récupérer le code
+      - name: Récupérer le projet
         uses: actions/checkout@v4
 
       - name: Installer Java 21
@@ -23,20 +23,33 @@ jobs:
       - name: Installer Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Installer Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '9.7.1'
-
-      - name: Installer les composants Android
+      - name: Créer debug.keystore
         run: |
-          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+          keytool -genkeypair \
+            -v \
+            -keystore "$GITHUB_WORKSPACE/debug.keystore" \
+            -storepass android \
+            -alias androiddebugkey \
+            -keypass android \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -dname "CN=Android Debug,O=Android,C=US"
+
+      - name: Donner les permissions à Gradle
+        run: chmod +x gradlew
 
       - name: Compiler l'APK
-        run: gradle assembleDebug --stacktrace
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Vérifier l'APK
+        run: |
+          echo "=== APK générés ==="
+          find app/build/outputs/apk -type f -name "*.apk" -print
 
       - name: Publier l'APK
         uses: actions/upload-artifact@v4
         with:
           name: boutique-debug-apk
           path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
