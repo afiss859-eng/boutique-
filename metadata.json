@@ -1,0 +1,6 @@
+{
+  "name": "Wend-Lamita",
+  "description": "Fintech et Gestion de Kiosque & Boutique - Orange Money, Registre CNI/KYC, Stock & Ventes, Assistant IA",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
