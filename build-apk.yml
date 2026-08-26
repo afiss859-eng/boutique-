@@ -32,11 +32,11 @@ jobs:
         run: |
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
 
-      - name: Créer le debug.keystore
+      - name: Créer debug.keystore
         run: |
           keytool -genkeypair \
             -v \
-            -keystore debug.keystore \
+            -keystore "$GITHUB_WORKSPACE/debug.keystore" \
             -storepass android \
             -alias androiddebugkey \
             -keypass android \
@@ -45,12 +45,18 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      - name: Vérifier debug.keystore
+        run: |
+          ls -lh "$GITHUB_WORKSPACE/debug.keystore"
+          test -f "$GITHUB_WORKSPACE/debug.keystore"
+
       - name: Compiler l'APK
         run: |
-          gradle assembleDebug --stacktrace
+          gradle clean assembleDebug --stacktrace
 
       - name: Vérifier l'APK
         run: |
+          echo "APK généré :"
           find app/build/outputs/apk -type f -name "*.apk" -print
 
       - name: Publier l'APK
